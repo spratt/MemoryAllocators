@@ -1,34 +1,36 @@
-BSD_SOURCE=bsd_allocator.cpp
+##############################################################
+#               CMake Project Wrapper Makefile               #
+#															 #
+# Taken from:												 #
+#   https://code.google.com/archive/p/cpp-project-template/  #
+############################################################## 
 
-INDIANA_SOURCE=indiana_allocator.cpp
+SHELL := /bin/bash
+RM    := rm -rf
 
-LINUX_SOURCE=linux_buddy_system.cpp
+.PHONY: all distclean
 
-OUTPUT=output.txt
+all: ./build/Makefile
+	@ $(MAKE) -C build
 
-B_TARGET=bsd
+./build/Makefile:
+	@ (cd build >/dev/null 2>&1 && cmake ..)
 
-I_TARGET=indiana
+distclean:
+	@- (cd build >/dev/null 2>&1 && cmake .. >/dev/null 2>&1)
+	@- $(MAKE) --silent -C build clean || true
+	@- $(RM) ./build/Makefile
+	@- $(RM) ./build/src
+	@- $(RM) ./build/test
+	@- $(RM) ./build/CMake*
+	@- $(RM) ./build/cmake.*
+	@- $(RM) ./build/*.cmake
+	@- $(RM) ./build/*.txt
 
-L_TARGET=linux
 
-all: bsd indiana linux
+ifeq ($(findstring distclean,$(MAKECMDGOALS)),)
 
-indiana:
-	g++ -std=c++11 -o $(I_TARGET) $(INDIANA_SOURCE)
+    $(MAKECMDGOALS): ./build/Makefile
+	@ $(MAKE) -C build $(MAKECMDGOALS)
 
-bsd:
-	g++ -std=c++11 -o $(B_TARGET) $(BSD_SOURCE)
-
-linux:
-	g++ -std=c++11 -o $(L_TARGET) $(LINUX_SOURCE)
-
-run:
-	./$(B_TARGET) &> $(OUTPUT)
-	./$(I_TARGET) >> $(OUTPUT)
-	./$(L_TARGET) >> $(OUTPUT)
-
-clean: 
-	rm $(B_TARGET)
-	rm $(I_TARGET)
-	rm $(L_TARGET)
+endif
